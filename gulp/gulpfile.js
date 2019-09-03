@@ -15,6 +15,21 @@
  *         ...                         // do something for the first invocation
  *       }
  *     }
+ *  2) Gulp v4 has breaking changes!
+ *     A task in Gulp may contain asynchronous code, for which the code needs to
+ *     signal Gulp when the task finished executing. In Gulp v3, you could get
+ *     away without doing this. If you didn't explicitly signal async completion,
+ *     Gulp would just assume that your task is synchronous and that it is
+ *     finished as soon as the task function returns. Gulp v4 is stricter, you
+ *     have to explicitly signal task completion, by returning one of the six
+ *     types: stream, promise, event emitter, child process, observable or
+ *     error-first callback. This gulpfile primarily uses error-first callback.
+ *     You can read more here:
+ *     https://gulpjs.com/docs/en/getting-started/async-completion
+ *     https://stackoverflow.com/questions/36897877/gulp-error-the-following-tasks-did-not-complete-did-you-forget-to-signal-async
+ *  3) This gulpfile uses gulp-notify for toaster notifications. You can see
+ *     advanced examples here:
+ *     https://github.com/mikaelbr/gulp-notify/blob/master/examples/gulpfile.js
  * -----------------------------------------------------------------------------
  */
 
@@ -56,17 +71,6 @@ const argv = new pkgYargs
     .option('v', {alias: 'uglifyjsd', default:'', type: 'string'})
     .option('w', {alias: 'uglifyjsf', default:'', type: 'string'})
     .argv;
-
-
-/* -----------------------------------------------------------------------------
- * With Gulp 4, a program-exit in an async task shows messages:
- * [11:28:39] The following tasks did not complete: default, _livereload
- * [11:28:39] Did you forget to signal async completion?
- * Introducing a controller variable to exit gracefully and to avoid displaying
- * this.
- * -----------------------------------------------------------------------------
- */
-//terminating = false;
 
 /* -----------------------------------------------------------------------------
  * Writes a log message to console with time or user defined prefix.
@@ -411,23 +415,6 @@ function CustomException(message, metadata='') {
   return error;
 }
 CustomException.prototype = Object.create(Error.prototype);
-
-/* -----------------------------------------------------------------------------
- * A task in Gulp may contain asynchronous code, for which the code needs to
- * signal Gulp when the task finished executing. In Gulp v3, you could get away
- * without doing this. If you didn't explicitly signal async completion, Gulp
- * would just assume that your task is synchronous and that it is finished as
- * soon as the task function returns. Gulp v4 is stricter, you have to
- * explicitly signal task completion, by returning one of the six types:
- * stream, promise, event emitter, child process, observable or error-first
- * callback. This is an error-first callback.
- *
- * You can read more here:
- * https://gulpjs.com/docs/en/getting-started/async-completion
- * https://stackoverflow.com/questions/36897877/gulp-error-the-following-tasks-did-not-complete-did-you-forget-to-signal-async
- * -----------------------------------------------------------------------------
- */
-function _bypass() {}
 
 /* -----------------------------------------------------------------------------
  * Gets current time.
